@@ -18,25 +18,47 @@ model User {
   @@map("users")
 }
 
-model Section {
-  id          Int        @id @default(autoincrement())
-  name        String
-  description String?
-  concepts    Concept[]
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
+model Deck {
+  id                  Int            @id @default(autoincrement())
+  name                String
+  description         String?
+  type                String
+  sourceLanguage      String?
+  targetLanguage      String?
+  directionMode       String         @default("normal") @map("direction_mode")
+  similarityThreshold Float          @default(0.7) @map("similarity_threshold")
+  cards               Card[]
+  sessions            StudySession[]
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
 
-  @@map("sections")
+  @@map("decks")
 }
 
-model Concept {
-  id          Int      @id @default(autoincrement())
-  term        String
-  definition  String
-  sectionId   Int      @map("section_id")
-  section     Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+model Card {
+  id             Int      @id @default(autoincrement())
+  deckId         Int      @map("deck_id")
+  deck           Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  term           String
+  definition     String
+  timesCorrect   Int      @default(0) @map("times_correct")
+  timesWrong     Int      @default(0) @map("times_wrong")
+  lastReviewedAt DateTime? @map("last_reviewed_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  @@map("concepts")
+  @@map("cards")
+}
+
+model StudySession {
+  id           Int      @id @default(autoincrement())
+  deckId       Int      @map("deck_id")
+  deck         Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  direction    String
+  totalCards   Int      @map("total_cards")
+  correctCards Int      @map("correct_cards")
+  wrongCards   Int      @map("wrong_cards")
+  completedAt  DateTime @default(now()) @map("completed_at")
+
+  @@map("study_sessions")
 }
